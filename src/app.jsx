@@ -1,9 +1,12 @@
 import { useState } from 'react';
 import styled from 'styled-components';
+import { Animation, FadeOut, SlideInTop, SlideOutTop } from './animations/animation-wrapper';
 import { Halloween1 } from './animations/fall/halloween-1';
+import { ChristmasLights } from './animations/winter/christmas-lights';
 import { Snow1 } from './animations/winter/snow-1';
-import { useMJRWebSocket } from './hooks/useMJRWebSocket';
-import { useTurkeyDevWebSocket } from './hooks/useTurkeyDevWebSocket';
+import { useMJRWebSocket } from './hooks/use-mjr-websocket';
+import { useTurkeyDevWebSocket } from './hooks/use-turkeydev-websocket';
+import { isDevEnv } from './network/network';
 import { getNonce } from './util/nonce';
 import { getURLParams } from './util/url-params';
 
@@ -11,6 +14,7 @@ const ScreenWrapper = styled.div`
     width: 100vw;
     height: 100vh;
     overflow: hidden;
+    background: ${isDevEnv() ? '#232323' : ''};
 `;
 
 export const App = () => {
@@ -73,8 +77,9 @@ export const App = () => {
 
     return (
         <ScreenWrapper>
-            {showId === 'halloween_1' && <Halloween1 out={animOut} onAnimationEnd={() => hide()} />}
-            {showId === 'snowflake_1' && <Snow1 out={animOut} onAnimationEnd={() => hide()} />}
+            <Animation component={<Halloween1 />} id='halloween_1' shownId={showId} onAnimationEnd={() => hide()} animation={animOut ? SlideOutTop : SlideInTop} />
+            <Animation component={<Snow1 />} id='snowflake_1' shownId={showId} onAnimationEnd={() => hide()} animation={animOut ? FadeOut : ''} />
+            <Animation component={<ChristmasLights numLights={10} />} id='christmas_lights_1' shownId={showId} onAnimationEnd={() => hide()} animation={animOut ? SlideOutTop : SlideInTop} />
         </ScreenWrapper>
     );
 }
