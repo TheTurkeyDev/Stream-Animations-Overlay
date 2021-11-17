@@ -18,7 +18,7 @@ const ScreenWrapper = styled.div`
 `;
 
 export const App = () => {
-    const { token } = getURLParams(window.location.search);
+    const { token, forceShow } = getURLParams(window.location.search);
 
     const [mjrConnectData, setMjrConnectData] = useState({
         type: 'LISTEN',
@@ -28,7 +28,7 @@ export const App = () => {
         token: '',
     });
     const [animOut, setAnimOut] = useState(false);
-    const [showId, setShowId] = useState('');
+    const [showId, setShowId] = useState(forceShow ?? '');
     const [userAnimData, setUserAnimData] = useState([]);
 
     useMJRWebSocket(mjrConnectData, (json) => {
@@ -64,7 +64,8 @@ export const App = () => {
 
         setShowId(anim.animation_id);
         setTimeout(() => {
-            setAnimOut(true);
+            if (!forceShow)
+                setAnimOut(true);
         }, anim.duration * 1000);
     }
 
