@@ -1,8 +1,2 @@
 Fireworks
-Christmas light chain
 Fall leaves
-Ballons
-
-
-========
-Custom "setting values" for the different animations
