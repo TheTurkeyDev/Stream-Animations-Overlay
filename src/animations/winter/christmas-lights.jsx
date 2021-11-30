@@ -19,7 +19,7 @@ const getRandomColorIgnore = (ignore) => {
 }
 
 export const ChristmasLights = ({ num_lights }) => {
-    const numLights = parseInt(num_lights);
+    const numLights = parseInt(num_lights ?? 10);
     const { height, width } = useWindowDimensions();
     const [lights, setLights] = useState([]);
 
