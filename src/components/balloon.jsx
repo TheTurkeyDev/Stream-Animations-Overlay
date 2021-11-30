@@ -9,7 +9,6 @@ const balloonRise = keyframes`
     }
 `;
 
-
 const BalloonWrapper = styled.div`
     position: fixed;
     top: -100%;

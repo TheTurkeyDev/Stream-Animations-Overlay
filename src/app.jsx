@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import styled from 'styled-components';
 import { Animation, FadeOut, SlideInTop, SlideOutTop } from './animations/animation-wrapper';
 import { Halloween1 } from './animations/fall/halloween-1';
@@ -32,6 +32,7 @@ export const App = () => {
     const [animOut, setAnimOut] = useState(false);
     const [showId, setShowId] = useState(forceShow ?? '');
     const [userAnimData, setUserAnimData] = useState([]);
+    const [animationQueue, setAnimationQueue] = useState([]);
 
     useMJRWebSocket(mjrConnectData, (json) => {
         const animId = Object.keys(userAnimData).find(k => userAnimData[k].channel_point === json.reward.id);
@@ -42,7 +43,16 @@ export const App = () => {
         'action': 'connect',
         'service': 'stream_animations',
         'token': token,
-    }, (json) => onTurkeyDevMessage(json))
+    }, (json) => onTurkeyDevMessage(json));
+
+    useEffect(() => {
+        if (showId === '' && animationQueue.length > 0) {
+            const animId = animationQueue[0];
+            showAnim(animId, userAnimData[animId]);
+            setAnimationQueue([...animationQueue].slice(1));
+        }
+
+    }, [animationQueue, showId])
 
     const onTurkeyDevMessage = (json) => {
         if (json.success) {
@@ -57,18 +67,32 @@ export const App = () => {
             else if (json.action === 'update_animations') {
                 setUserAnimData(json.data);
             }
+            else if (json.action === 'test') {
+                const animId = json.data.id;
+                showAnim(animId, userAnimData[animId]);
+            }
         }
     }
 
     const showAnim = (animId, data) => {
-        if (showId !== '' || !animId)
+        if (!animId)
             return;
 
+        if (showId !== '') {
+            setAnimationQueue(old => [...old, animId]);
+            return;
+        }
+
+        if (data.sound) {
+            const audio = new Audio(data.sound);
+            audio.play();
+        }
         setShowId(animId);
+        const delay = getDurationOfAnimation(animId, data);
         setTimeout(() => {
             if (!forceShow)
                 setAnimOut(true);
-        }, getDurationOfAnimation(animId, data));
+        }, delay);
     }
 
     const getDurationOfAnimation = (animId, data) => {
@@ -76,11 +100,11 @@ export const App = () => {
             return 10000;
 
         if (animId === Animations.BALLOONS_1) {
-            return data.duration ?? balloonsDurationDefault + data.delay ?? balloonsDelayDefault;
+            return (parseInt(data.duration ?? balloonsDurationDefault) + parseInt(data.delay ?? balloonsDelayDefault) + 1) * 1000;
         }
 
 
-        return data.duration ?? 10000;
+        return parseInt(data.duration ?? 10) * 1000;
     }
 
     const hide = () => {
@@ -92,10 +116,10 @@ export const App = () => {
 
     return (
         <ScreenWrapper>
-            <Animation component={<Halloween1 />} id={Animations.HALLOWEEN_1} shownId={showId} onAnimationEnd={() => hide()} animation={animOut ? SlideOutTop : SlideInTop} />
-            <Animation component={<Snow1 />} id={Animations.SNOWFLAKE_1} shownId={showId} onAnimationEnd={() => hide()} animation={animOut ? FadeOut : ''} />
-            <Animation component={<ChristmasLights numLights={10} />} id={Animations.CHRISTMAS_LIGHTS_1} shownId={showId} onAnimationEnd={() => hide()} animation={animOut ? SlideOutTop : SlideInTop} />
-            <Animation component={<Balloons1 {...userAnimData[Animations.BALLOONS_1]} />} id={Animations.BALLOONS_1} shownId={showId} onAnimationEnd={() => hide()} animation={''} />
+            <Animation component={<Halloween1 {...userAnimData[Animations.HALLOWEEN_1]} />} id={Animations.HALLOWEEN_1} shownId={showId} onAnimationEnd={() => hide()} animation={animOut ? SlideOutTop : SlideInTop} />
+            <Animation component={<Snow1 {...userAnimData[Animations.SNOWFLAKE_1]} />} id={Animations.SNOWFLAKE_1} shownId={showId} onAnimationEnd={() => hide()} animation={animOut ? FadeOut : ''} />
+            <Animation component={<ChristmasLights {...userAnimData[Animations.CHRISTMAS_LIGHTS_1]} />} id={Animations.CHRISTMAS_LIGHTS_1} shownId={showId} onAnimationEnd={() => hide()} animation={animOut ? SlideOutTop : SlideInTop} />
+            <Animation component={<Balloons1 {...userAnimData[Animations.BALLOONS_1]} />} id={Animations.BALLOONS_1} shownId={showId} onAnimationEnd={() => hide()} animation={animOut ? FadeOut : ''} />
         </ScreenWrapper>
     );
 }
