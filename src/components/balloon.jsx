@@ -9,20 +9,30 @@ const balloonRise = keyframes`
     }
 `;
 
+const balloonSway = keyframes`
+    0% {
+        transform: translateX(-30px);
+    }
+    100% {
+        transform: translateX(30px);
+    }
+`;
+
 const BalloonWrapper = styled.div`
     position: fixed;
     top: -100%;
-    animation-name: ${balloonRise};
-    animation-duration: ${({ duration }) => duration}s;
-    animation-timing-function: linear;
+    animation-name: ${balloonRise}, ${balloonSway};
+    animation-duration: ${({ duration }) => duration}s, 2s;
+    animation-timing-function: linear, ease-in-out;
     animation-play-state: running;
+    animation-direction: normal, alternate;
+    animation-iteration-count: 1, infinite;
 
     left: ${({ left }) => left}%;
-    animation-delay: ${({ delay }) => `${delay}s`};
 `;
 
 const BalloonBall = styled.div`
-  background: ${props => props.color};
+    background: ${props => props.color};
     width: 75px;
     height: 75px;
 
@@ -60,12 +70,12 @@ const String = styled.div`
 export const Balloon = ({ left, delay, duration, color }) => {
 
     return (
-        <BalloonWrapper left={left} delay={delay} duration={duration}>
+        <BalloonWrapper left={left} duration={duration} style={{ animationDelay: `${delay}s, ${Math.min(Math.random() * 3, delay)}s` }}>
             <BalloonBall color={color} />
             <String>
                 <div />
                 <div />
             </String>
-        </BalloonWrapper>
+        </BalloonWrapper >
     )
 }
